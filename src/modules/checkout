@@ -1,0 +1,53 @@
+#!/bin/bash
+function moduleLoadOptions() {
+    getOpt "-b" create_branch 1 ""
+    return 0
+}
+
+function hasChanges() {
+     ! $GIT diff-index --quiet HEAD --
+}
+
+function saveProgress() {
+    if hasChanges; then
+        $GIT add -A
+        $GIT commit -m wip
+    fi
+}
+
+function restoreProgress() {
+    getLastCommit | while read commit; do
+        message="`getCommitMessage "$commit"`"
+
+        if [ "$message" == "wip" ]; then
+            $GIT reset HEAD~1
+        fi
+    done
+}
+
+function setParent() {
+    $GIT config "branch.$BRANCH.parent" "$@"
+}
+
+function moduleRun() {
+    if [ -n "$create_branch" ]; then
+        if hasChanges; then
+            error "Must commit first"
+        fi
+
+        $GIT checkout -b "$create_branch" "$@"
+        git parent "$BRANCH"
+        exit 1
+    fi
+
+    if isBranch "$1"; then
+        saveProgress
+    fi
+
+    $GIT checkout "${ARGUMENTS[@]}"
+
+    NEW_BRANCH="`$GIT rev-parse --abbrev-ref HEAD`"
+    if [ "$NEW_BRANCH" != "$BRANCH" ]; then
+        BRANCH="$NEW_BRANCH" restoreProgress
+    fi
+}

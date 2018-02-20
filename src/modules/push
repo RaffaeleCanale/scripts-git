@@ -1,0 +1,38 @@
+#!/bin/bash
+function remoteExists() {
+    git branch -a | egrep "remotes/origin/${1:-$BRANCH}$" > /dev/null
+}
+
+function moduleRun() {
+    MERGE_REGEX="Merge branch .* into .*"
+
+    if remoteExists; then
+        getCommits | while read commit; do
+            if ! [[ "$commit" =~ $MERGE_REGEX ]]; then
+                if ! [[ "$commit" =~ __PROJECT_REGEX__ ]]; then
+                    error "Missing ticket number: $commit"
+                fi
+                message="`getCommitMessage "$commit"`"
+
+                if [ "$message" == "wip" ]; then
+                    error "Forbidden commit message: $commit"
+                fi
+            fi
+        done || exit 1
+
+        getCommits | while read commit; do
+            echoYellow "  $commit"
+        done
+
+        read -p ""
+        $GIT push "$@"
+    else
+        ARGUMENTS+=("--set-upstream")
+        ARGUMENTS+=("origin")
+        ARGUMENTS+=("$BRANCH")
+        echo "cmd: git push ${ARGUMENTS[@]}"
+
+        read -p ""
+        $GIT push "${ARGUMENTS[@]}"
+    fi
+}

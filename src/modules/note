@@ -1,0 +1,4 @@
+#!/bin/bash
+function moduleRun() {
+    $GIT config "branch.$BRANCH.note" "$@"
+}

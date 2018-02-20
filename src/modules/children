@@ -1,0 +1,19 @@
+#!/bin/bash
+function moduleRun() {
+    error "Not implemented"
+	local branches=(`$GIT for-each-ref --sort=committerdate refs/heads/ --format='%(refname:short)'`)
+
+	for branch in "${branches[@]}"; do
+		# if [ "$branch" == "$BRANCH" ]; then
+		# 	echoGreen "* $branch " -n
+		# else
+		# 	echo -n "  $branch "
+		# fi
+		# echoViolet " `$GIT config branch.$branch.note`"
+        echo -n "$branch <- "
+        BRANCH="$branch" git parent
+        # if [ "$BRANCH" == `BRANCH="$branch" git parent` ]; then
+        #     echo "$branch"
+        # fi
+	done
+}

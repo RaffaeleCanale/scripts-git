@@ -1,0 +1,39 @@
+#!/bin/bash
+
+function modulePrintHelp() {
+    cat << EOF
+        Add a git hook to prefix every commit with the project ticket number
+EOF
+}
+
+function moduleLoadOptions() {
+    readonly HOOK_FILE=".git/hooks/prepare-commit-msg"
+}
+
+function module_run() {
+    read -r -d '' HOOK <<'EOF'
+#!/bin/bash
+
+# Extract JIRA ticket ID from branch name
+PROJECT_ID="$(git symbolic-ref --short HEAD | grep -Eo "__PROJECT_REGEX__"| cut -d: -f2)"
+
+if [ -z "$PROJECT_ID" ]; then
+    # No ticket ID. Do nothing.
+    exit 0
+fi
+
+if [[ "$2" = "merge" ]]; then
+    # Do nothing on merge commits
+    exit 0
+fi
+
+PROJECT_ID_IN_COMMIT=$(grep -c "^\([^#].*\|^\)$PROJECT_ID" $1)
+
+if ! [ "$PROJECT_ID_IN_COMMIT" -ge 1 ]; then
+    sed -i.bak -e "1s/^/$PROJECT_ID: /" $1
+fi
+EOF
+
+    echo "$HOOK" > "$HOOK_FILE"
+    chmod +x "$HOOK_FILE"
+}

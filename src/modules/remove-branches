@@ -1,0 +1,12 @@
+#!/bin/bash
+function branchesToRemove() {
+    $GIT branch -vv | grep 'origin/.*: gone]' | awk '{print $1}'
+}
+
+function moduleRun() {
+    $GIT fetch --prune
+    branchesToRemove
+    if inputYesNo "Remove these branches?"; then
+         branchesToRemove | xargs $GIT branch -d
+    fi
+}

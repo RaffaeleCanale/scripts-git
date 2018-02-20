@@ -1,0 +1,18 @@
+#!/bin/bash
+function moduleRun() {
+	if [ $# -gt 0 ] && [[ "$1" =~ ^[0-9]+$ ]]; then
+        ARGUMENTS[0]="FUL-$1"
+        $GIT merge "${ARGUMENTS[@]}"
+    elif [ $# -gt 0 ] && [ "$1" == "parent" ]; then
+        parent="`git parent`"
+
+        $GIT checkout "$parent"
+        $GIT pull
+        $GIT checkout "$BRANCH"
+
+        ARGUMENTS[0]="$parent"
+        $GIT merge "${ARGUMENTS[@]}"
+    else
+        $GIT merge $@
+    fi
+}

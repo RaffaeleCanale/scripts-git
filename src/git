@@ -1,0 +1,78 @@
+#!/bin/bash
+
+function printHelp() {
+    cat << EOF
+EOF
+}
+
+function declareConstants() {
+    $1 GIT "/usr/bin/git"
+    $1 PROJECT_PREFIX "__PROJECT_PREFIX__"
+    $1 PROJECT_REGEX "__PROJECT_REGEX__"
+    READONLY=false $1 BRANCH "`$GIT rev-parse --abbrev-ref HEAD`"
+}
+
+function loadOptions() {
+	unusedBehaviour="IGNORE"
+    getOpt "--n" native
+}
+
+function getLastCommit() {
+    $GIT log HEAD^..HEAD --pretty=oneline --abbrev-commit | cut -d ' ' -f2-
+}
+
+function getCommits() {
+    $GIT log origin/$BRANCH..HEAD --pretty=oneline --abbrev-commit | cut -d ' ' -f2-
+}
+
+function getCommitMessage() {
+    local message="`echo "$1" | cut -d ' ' -f2-`"
+    message="${message//[[:blank:]]/}" # trim
+    message="${message,,}" # lowercase
+
+    echo "$message"
+}
+
+function resolveBranchName() {
+    for (( i = 0; i < ${#ARGUMENTS[@]}; i++ )); do
+        arg="${ARGUMENTS[$i]}"
+        if [[ "$arg" =~ ^[0-9][0-9][0-9][0-9]$ ]]; then
+            ARGUMENTS[$i]="${PROJECT_PREFIX}${arg}"
+        elif [ "$arg" == "parent" ]; then
+            ARGUMENTS[$i]="`git parent`"
+        fi
+    done
+}
+
+function isBranch() {
+    $GIT branch | egrep "^[[:space:]]+${1}$"
+}
+
+function run() {
+    if $native || [ "${CUSTOM_GIT:-false}" != "true" ]; then
+        $GIT "$@"
+        return $?
+    fi
+
+    local module="__ROOT__/modules/$1"
+    if [ -f "$module" ]; then
+        source "$module"
+        shift
+
+        ARGUMENTS=("$@")
+        resolveBranchName
+        if type moduleLoadOptions &>/dev/null; then
+            moduleLoadOptions
+        fi
+
+        if [ $unusedBehaviour != "IGNORE" ]; then
+            checkUnused
+        fi
+
+        moduleRun "${ARGUMENTS[@]:+${ARGUMENTS[@]}}"
+    else
+        $GIT "$@"
+    fi
+}
+
+source "__STARTER__@v1"

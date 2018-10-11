@@ -4,11 +4,12 @@ function remoteExists() {
 }
 
 function moduleRun() {
-    MERGE_REGEX="Merge branch .* into .*"
+    MERGE_REGEX_1="Merge branch .* into .*"
+    MERGE_REGEX_2="Merge pull request .* from .*"
 
     if remoteExists; then
         getCommits | while read commit; do
-            if ! [[ "$commit" =~ $MERGE_REGEX ]]; then
+            if ! [[ "$commit" =~ $MERGE_REGEX_1 ]] && ! [[ "$commit" =~ $MERGE_REGEX_2 ]]; then
                 if ! [[ "$commit" =~ __PROJECT_REGEX__ ]]; then
                     error "Missing ticket number: $commit"
                 fi

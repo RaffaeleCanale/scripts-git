@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+TOKEN="27e46a779d38f51da458ab7466aa13a92f695384"
+GIT_NAME="raffaelecanale"
+
+CURL=(curl -s -H "Authorization: token $TOKEN")
+API="https://api.github.com"
+AUTHORED="state%3Aopen+archived%3Afalse+author%3A${GIT_NAME}+type%3Apr+user%3Abeekpr"
+ASSIGNED="state%3Aopen+archived%3Afalse+assignee%3A${GIT_NAME}+user%3Abeekpr"
+
+APPROVED="$AUTHORED+review%3Aapproved"
+CHANGE="$AUTHORED+review%3Achanges_requested"
+PASSED="$AUTHORED+status%3Asuccess"
+FAILED="$AUTHORED+status%3Afailure"
+REVIEW="$ASSIGNED+label%3A"'"Code+Review%3A+Ready+for+Review"'
+
+TEXT=""
+
+while read PR
+do
+    if [[ -n $PR ]]
+    then
+        TEXT="$TEXT Approved PR: $PR ---"
+    fi
+done <<< $( "${CURL[@]}" "$API/search/issues?q=$APPROVED" | jq -r .items[].title  | cut -c 1-9 )
+
+while read PR
+do
+    if [[ -n $PR ]]
+    then
+        TEXT="$TEXT Changes Requested: $PR ---"
+    fi
+done <<< $( "${CURL[@]}" "$API/search/issues?q=$CHANGE" | jq -r .items[].title | cut -c 1-9  )
+
+
+while read PR
+do
+    if [[ -n $PR ]]
+    then
+        TEXT="$TEXT Tests Passed: $PR ---"
+    fi
+done <<< $( "${CURL[@]}" "$API/search/issues?q=$PASSED" | jq -r .items[].title | cut -c 1-9  )
+
+while read PR
+do
+    if [[ -n $PR ]]
+    then
+        TEXT="$TEXT Tests Failed: $PR ---"
+    fi
+done <<< $( "${CURL[@]}" "$API/search/issues?q=$FAILED" | jq -r .items[].title | cut -c 1-9 )
+
+while read PR
+do
+    if [[ -n $PR ]]
+    then
+        TEXT="$TEXT Assigned for Review: $PR ---"
+    fi
+done <<< $( "${CURL[@]}" "$API/search/issues?q=$REVIEW" | jq -r .items[].title | cut -c 1-9 )
+
+
+if [[ -n $TEXT ]]; then
+    echo ${TEXT%---}
+
+    "__ROOT__/notify/leds" blink -n 3
+else
+    echo "No relevant PRs"
+fi

@@ -36,7 +36,7 @@ function getCommitMessage() {
 function resolveBranchName() {
     for (( i = 0; i < ${#ARGUMENTS[@]}; i++ )); do
         arg="${ARGUMENTS[$i]}"
-        if [[ "$arg" =~ ^[0-9][0-9][0-9][0-9]$ ]]; then
+        if [[ "$arg" =~ ^[0-9]+$ ]]; then
             ARGUMENTS[$i]="${PROJECT_PREFIX}${arg}"
         elif [ "$arg" == "parent" ]; then
             ARGUMENTS[$i]="`git parent`"

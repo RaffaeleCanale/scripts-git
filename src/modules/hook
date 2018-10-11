@@ -10,7 +10,7 @@ function moduleLoadOptions() {
     readonly HOOK_FILE=".git/hooks/prepare-commit-msg"
 }
 
-function module_run() {
+function moduleRun() {
     read -r -d '' HOOK <<'EOF'
 #!/bin/bash
 

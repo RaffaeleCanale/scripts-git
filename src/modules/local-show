@@ -1,0 +1,4 @@
+#!/bin/bash
+function moduleRun() {
+    git update-index --no-assume-unchanged  "$1"
+}

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+function moduleRun() {
+    for branch in `$GIT branch -r | grep -v HEAD`;do echo -e `$GIT show --pretty=format:"%Cred %cn %>|(40) %Cblue %ar %>|(80) %Creset" $branch | head -n 1` $branch; done | sort -r
+}

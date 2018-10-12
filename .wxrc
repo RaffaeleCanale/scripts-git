@@ -1,8 +1,6 @@
 {
     "main": "git",
-    "files": [
-        {
-            "output": "config.properties"
-        }
+    "config": [
+        "config.properties"
     ]
 }

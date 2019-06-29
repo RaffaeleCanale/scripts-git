@@ -1,0 +1,22 @@
+
+
+__cgit()
+{
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    prev2="${COMP_WORDS[COMP_CWORD-2]}"
+
+    modules="branch-owner children hook local-hide local-show parent remove-branches"
+
+    case "$prev" in
+        "cgit" )
+            COMPREPLY=( $(compgen -W "${modules}" -- ${cur}) )
+            ;;
+        * )
+            COMPREPLY=( $(compgen -W "" -- ${cur}) )
+            ;;
+    esac
+}
+
+complete -F __cgit cgit

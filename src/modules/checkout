@@ -37,6 +37,8 @@ function moduleRun() {
 
         $GIT checkout -b "$create_branch" "$@"
         git parent "$BRANCH"
+        NEW_BRANCH="`$GIT rev-parse --abbrev-ref HEAD`"
+        applyJiraNote "$NEW_BRANCH"
         exit 1
     fi
 
@@ -48,6 +50,22 @@ function moduleRun() {
 
     NEW_BRANCH="`$GIT rev-parse --abbrev-ref HEAD`"
     if [ "$NEW_BRANCH" != "$BRANCH" ]; then
+        applyJiraNote "$NEW_BRANCH"
         BRANCH="$NEW_BRANCH" restoreProgress
+    fi
+}
+
+function applyJiraNote() {
+    if [ "$1" == "develop" ] || [ "$1" == "staging" ] || [ "$1" == "master" ]; then
+        return
+    fi
+    $GIT config "branch.$1.note" > /dev/null
+    if [ $? -eq 0 ]; then
+        return
+    fi
+
+    title="`bk jira get-ticket "$1"`"
+    if [ $? -eq 0 ]; then
+        $GIT config "branch.$1.note" "$title"
     fi
 }

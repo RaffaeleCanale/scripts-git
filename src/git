@@ -49,8 +49,12 @@ function isBranch() {
 }
 
 function run() {
-    if $native || [ "${CUSTOM_GIT:-false}" != "true" ]; then
-        $GIT "$@"
+    # ps -o comm=$PPID
+    if $native \
+        || [ "${CUSTOM_GIT:-false}" != "true" ] \
+        || [[ "`ps -o comm=$PPID`" == *"gh"* ]] \
+        || [[ "`ps -o comm=$PPID`" == *"hotfix"* ]]; then
+        $GIT ${ORIGINAL_ARGS[@]}
         return $?
     fi
 
@@ -75,4 +79,4 @@ function run() {
     fi
 }
 
-source "__STARTER__@v1"
+source "__STARTER__@v2"

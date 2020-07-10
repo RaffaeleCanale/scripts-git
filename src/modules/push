@@ -8,24 +8,24 @@ function moduleRun() {
     MERGE_REGEX_2="Merge pull request .* from .*"
 
     if remoteExists; then
-        getCommits | while read commit; do
-            if ! [[ "$commit" =~ $MERGE_REGEX_1 ]] && ! [[ "$commit" =~ $MERGE_REGEX_2 ]]; then
-                if ! [[ "$commit" =~ __PROJECT_REGEX__ ]]; then
-                    error "Missing ticket number: $commit"
-                fi
-                message="`getCommitMessage "$commit"`"
+        # getCommits | while read commit; do
+        #     if ! [[ "$commit" =~ $MERGE_REGEX_1 ]] && ! [[ "$commit" =~ $MERGE_REGEX_2 ]]; then
+        #         if ! [[ "$commit" =~ __PROJECT_REGEX__ ]]; then
+        #             error "Missing ticket number: $commit"
+        #         fi
+        #         message="`getCommitMessage "$commit"`"
 
-                if [ "$message" == "wip" ]; then
-                    error "Forbidden commit message: $commit"
-                fi
-            fi
-        done || exit 1
+        #         if [ "$message" == "wip" ]; then
+        #             error "Forbidden commit message: $commit"
+        #         fi
+        #     fi
+        # done || exit 1
 
-        getCommits | while read commit; do
-            echoYellow "  $commit"
-        done
+        # getCommits | while read commit; do
+        #     echo `yellow "  $commit"`
+        # done
 
-        read -p ""
+        # read -p ""
         $GIT push "$@"
     else
         ARGUMENTS+=("--set-upstream")

@@ -8,10 +8,10 @@ function moduleRun() {
 
 	for branch in "${branches[@]}"; do
 		if [ "$branch" == "$BRANCH" ]; then
-			echoGreen "* $branch " -n
+			echo -n `green "* $branch "`
 		else
 			echo -n "  $branch "
 		fi
-		echoViolet " `$GIT config branch.$branch.note`"
+		echo $(magenta " `$GIT config branch.$branch.note`")
 	done
 }

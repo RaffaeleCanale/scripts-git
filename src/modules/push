@@ -4,6 +4,12 @@ function remoteExists() {
 }
 
 function moduleRun() {
+    if [ "$BRANCH" == "develop" ] || [ "$BRANCH" == "staging" ] || [ "$BRANCH" == "master" ]; then
+        # if ! inputYesNo "`red "Are you sure you want to push to $BRANCH?"`"; then
+        if ! inputYesNo "Are you sure you want to push to `red "$BRANCH"`?"; then
+            stop "Cancelled"
+        fi
+    fi
     MERGE_REGEX_1="Merge branch .* into .*"
     MERGE_REGEX_2="Merge pull request .* from .*"
 

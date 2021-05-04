@@ -1,0 +1,17 @@
+#!/bin/bash
+function moduleLoadOptions() {
+    getOpt "-a" get_all
+    return 0
+}
+
+function moduleRun() {
+    if $get_all; then
+        repos=(`gh api -X GET search/issues -f q='author:RaffaeleCanale type:pr state:open' | jq -r .items[].url | sed -e 's@^https://api.github.com/repos/\(.*\)/issues/.*@\1@' | sort | uniq`)
+        for repo in "${repos[@]}"; do
+            echo `bold "$repo"`
+            gh pr list --json baseRefName,headRefName,reviewDecision,url,title,mergeable,isDraft,reviewRequests,statusCheckRollup -R "$repo" -A RaffaeleCanale | node __ROOT__/js/printPRs.js
+        done
+    else
+        gh pr list --json baseRefName,headRefName,reviewDecision,url,title,mergeable,isDraft,reviewRequests,statusCheckRollup | node __ROOT__/js/printPRs.js
+    fi
+}

@@ -29,7 +29,16 @@ function setParent() {
     $GIT config "branch.$BRANCH.parent" "$@"
 }
 
+function prsList() {
+    gh pr list --json baseRefName,headRefName,reviewDecision,url,title,mergeable,isDraft,reviewRequests,statusCheckRollup "$@"
+}
+
 function moduleRun() {
+    if [ $# -eq 0 ] && [ -z "$create_branch" ]; then
+        node __ROOT__/js/selectPR.js "`prsList`" "bash -i -c 'cgit checkout \1'"
+        return
+    fi
+
     if [ -n "$create_branch" ]; then
         if hasChanges; then
             error "Must commit first"

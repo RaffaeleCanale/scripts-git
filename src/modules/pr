@@ -1,4 +1,4 @@
 #!/bin/bash
 function moduleRun() {
-    gh pr create --web --label "Code Review: Ready for Review"
+    gh pr create -f -B `git parent` "$@"
 }

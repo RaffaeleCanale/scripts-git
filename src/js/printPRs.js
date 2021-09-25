@@ -1,54 +1,7 @@
-function cyan(s) {
-  return `\x1b[36m${s}\x1b[0m`;
-}
-
-function green(s) {
-  return `\x1b[32m${s}\x1b[0m`;
-}
-
-function yellow(s) {
-  return `\x1b[33m${s}\x1b[0m`;
-}
-
-function red(s) {
-  return `\x1b[31m${s}\x1b[0m`;
-}
-
-function grey(s) {
-  return `\x1b[90m${s}\x1b[0m`;
-}
-
-function prStatus(pr) {
-  if (pr.isDraft) {
-    return "Draft";
-  }
-
-  const failedChecks = pr.statusCheckRollup.filter(
-    (check) => check.state !== "SUCCESS"
-  );
-  if (failedChecks.length > 0) {
-    const names = failedChecks.map((check) => check.context).join(", ");
-    return red(`❌ Failure(s) (${names})`);
-  }
-
-  if (pr.mergeable === "CONFLICTING") {
-    return red("❌ Conflicts");
-  }
-  if (pr.reviewDecision === "REQUEST_CHANGES") {
-    return red("❌ Changes required");
-  }
-
-  if (pr.reviewRequests.length > 0) {
-    const reviewers = pr.reviewRequests.map(({ login }) => login).join(", ");
-    return yellow(`Waiting for review (${reviewers})`);
-  }
-
-  if (pr.reviewDecision === "APPROVED") {
-    return green("🍏 Approved");
-  }
-
-  return red("Unknown");
-}
+const { red, grey, cyan } = require("./colors");
+const { prStatus } = require("./prStatus");
+const fs = require("fs");
+const Treeify = require("./Treeify");
 
 function pullRequestsToTree(prs) {
   const master = { label: "master", children: [] };
@@ -77,11 +30,10 @@ function toNode(pr) {
   return pr;
 }
 
-const fs = require("fs");
-const Treeify = require("./Treeify");
-const stdinBuffer = fs.readFileSync(0);
-
-const pullRequests = JSON.parse(stdinBuffer.toString());
-
-const tree = pullRequestsToTree(pullRequests);
-Treeify.asTree(tree);
+const pullRequests = JSON.parse(process.argv[2]);
+if (Array.isArray(pullRequests)) {
+  const tree = pullRequestsToTree(pullRequests);
+  Treeify.asTree(tree);
+} else {
+  console.log(prStatus(pullRequests));
+}
